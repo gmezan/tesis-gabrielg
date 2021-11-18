@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Slices HPC</title>
+</head>
+<body>
+    {% for i in slices %}
+        <p><b>Slice ID</b>: {{i.slice_identifier}}</p> 
+        <p><b>Security status</b>: {{i.security_status}}</p> 
+        <p><b>Security request body</b>: {{i.security_request_body}}</p> 
+        <p><b>OpenStack security rules</b>: {{i.openstack_security_rules}}</p> 
+        <p><b>OpenDaylight security rules</b>: {{i.opendaylight_security_rules}}</p> 
+        <br>
+    {% endfor %}
+</body>
+</html>
