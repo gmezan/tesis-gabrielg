@@ -8,8 +8,8 @@ import requests
 import json
 import copy
 
-SLICE_MANAGER_IP = '10.0.0.200'
-SLICE_MANAGER_PORT = '8100'
+SLICE_MANAGER_IP = '10.0.0.1'
+SLICE_MANAGER_PORT = '8000'
 
 """
 =====================================================================================

@@ -10,14 +10,14 @@ import copy
 import uuid
 import random
 
-ODL_IP = '10.0.0.200'
+ODL_IP = '10.0.0.1'
 ODL_API_port = '8181'
 ODL_BASE_URL = 'http://' + ODL_IP + ':' + ODL_API_port
 ODL_user = 'admin'
 ODL_password = 'admin'
 ODL_switch_id = '431646109239664'
 
-CONTROLLER_IP = '10.0.0.200'
+CONTROLLER_IP = '10.0.0.1'
 COMPUTE_API_PORT = '8774'
 IDENTITY_API_PORT = '5000'
 IMAGE_API_PORT = '9292'
@@ -27,9 +27,9 @@ IMAGE_OPENSTACK = "ddd3d486-4bf7-4436-8756-e317aa5d4c39"
 FLAVOR_OPENSTACK = "20"
 
 SLICE_MANAGER_IP = '10.0.0.200'
-SLICE_MANAGER_PORT = '8100'
+SLICE_MANAGER_PORT = '8000'
 CYBERSECURITY_MODULE_IP = '10.0.0.200'
-CYBERSECURITY_MODULE_PORT = '8200'
+CYBERSECURITY_MODULE_PORT = '8001'
 
 controller_openflow_port_dict = { "dev-head-node_openflow_port": "6" }
 computes_openflow_port_dict = { "dev-worker-node-1_openflow_port": "7", "dev-worker-node-2_openflow_port": "8"}
