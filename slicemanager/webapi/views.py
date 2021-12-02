@@ -119,9 +119,6 @@ def handle_client_create_request(request):
 
         slice_id = create_slice_hpc(cant_masters, cant_workers)
 
-        if True:
-            return HttpResponse(str(slice_id))
-
         slice_mgnt_data_net_info = generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers)
 
         slice_info = {
@@ -179,15 +176,11 @@ def create_slice_hpc(cant_masters, cant_workers):
     r_create_access_net = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks", json = json_create_net, headers = { 'X-Auth-Token': token })
     
     r_dict_create_access_net = json.loads(r_create_access_net.text)
-    print(r_dict_create_access_net)
     access_net_id = r_dict_create_access_net['network']['id']
-
-    if True:
-        return r_dict_create_access_net
 
     json_create_net = return_create_net()
     json_create_net['network']['name'] = slice_id + '_cluster_mgnt_net'
-    json_create_net['network']['provider:physical_network'] = 'physnet2'
+    json_create_net['network']['provider:physical_network'] = 'provider'
     json_create_net['network']['port_security_enabled'] = 'false'
     r_create_mgnt_net = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks", json = json_create_net, headers = { 'X-Auth-Token': token })
     r_dict_create_mgnt_net = json.loads(r_create_mgnt_net.text)
@@ -196,7 +189,7 @@ def create_slice_hpc(cant_masters, cant_workers):
 
     json_create_net = return_create_net()
     json_create_net['network']['name'] = slice_id + '_cluster_data_net'
-    json_create_net['network']['provider:physical_network'] = 'physnet2'
+    json_create_net['network']['provider:physical_network'] = 'provider'
     json_create_net['network']['port_security_enabled'] = 'false'
     r_create_data_net = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks", json = json_create_net, headers = { 'X-Auth-Token': token })
     r_dict_create_data_net = json.loads(r_create_data_net.text)
