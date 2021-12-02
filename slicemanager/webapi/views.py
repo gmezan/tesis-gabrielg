@@ -283,6 +283,7 @@ def create_slice_hpc(cant_masters, cant_workers):
     json_router['router']['external_gateway_info']['network_id'] = external_provider_net_id
     r_create_router = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers", json = json_router, headers = { 'X-Auth-Token': token })
     r_dict_create_router = json.loads(r_create_router.text)
+    print(str(r_dict_create_router))
     router_id = r_dict_create_router['router']['id']
 
     json_config_interface_router = return_config_interface_router()
