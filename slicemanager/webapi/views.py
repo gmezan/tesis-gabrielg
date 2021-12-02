@@ -274,7 +274,7 @@ def create_slice_hpc(cant_masters, cant_workers):
     """ CREAR ROUTER """
 
     # Se cambia external_provider por provider1
-    r_external_provider_net = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks?name=provider1", headers = { 'X-Auth-Token': token })
+    r_external_provider_net = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks?name=external_provider", headers = { 'X-Auth-Token': token })
     r_dict_external_provider_net = json.loads(r_external_provider_net.text)
     external_provider_net_id = r_dict_external_provider_net['networks'][0]['id']
 
