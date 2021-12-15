@@ -32,9 +32,9 @@ CYBERSECURITY_MODULE_IP = '10.0.0.1'
 CYBERSECURITY_MODULE_PORT = '8001'
 
 controller_openflow_port_dict = { "dev-head-node_openflow_port": "6" }
-computes_openflow_port_dict = { "wor-1_openflow_port": "7", "wor-2_openflow_port": "8"}
+computes_openflow_port_dict = { "worker-1_openflow_port": "7", "worker-2_openflow_port": "8"}
 
-compute_availability_zone = ["nova:wor-1", "nova:wor-2"]
+compute_availability_zone = ["nova:worker-1", "nova:worker-2"]
 
 """
 =====================================================================================
