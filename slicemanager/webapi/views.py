@@ -32,9 +32,9 @@ CYBERSECURITY_MODULE_IP = '10.0.0.1'
 CYBERSECURITY_MODULE_PORT = '8001'
 
 controller_openflow_port_dict = { "dev-head-node_openflow_port": "6" }
-computes_openflow_port_dict = { "dev-worker-node-1_openflow_port": "7", "dev-worker-node-2_openflow_port": "8"}
+computes_openflow_port_dict = { "wor-1_openflow_port": "7", "wor-2_openflow_port": "8"}
 
-compute_availability_zone = ["nova:dev-worker-node-1", "nova:dev-worker-node-2"]
+compute_availability_zone = ["nova:wor-1", "nova:wor-2"]
 
 """
 =====================================================================================
@@ -299,9 +299,9 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_master_server['server']['flavorRef'] = FLAVOR_OPENSTACK
 
         if (index % 2) == 0:
-            json_master_server['server']['availability_zone'] = "nova:dev-worker-node-1"
+            json_master_server['server']['availability_zone'] = "nova:worker-1"
         else:
-            json_master_server['server']['availability_zone'] = "nova:dev-worker-node-2"
+            json_master_server['server']['availability_zone'] = "nova:worker-2"
 
         json_master_server['server']['networks'][0]['port'] = access_master_port_id
         json_master_server['server']['networks'][1]['port'] = mgnt_master_port_id
@@ -315,9 +315,9 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_worker_server['server']['flavorRef'] = FLAVOR_OPENSTACK
 
         if (index % 2) == 0:
-            json_worker_server['server']['availability_zone'] = "nova:dev-worker-node-1"
+            json_worker_server['server']['availability_zone'] = "nova:worker-1"
         else:
-            json_worker_server['server']['availability_zone'] = "nova:dev-worker-node-2"
+            json_worker_server['server']['availability_zone'] = "nova:worker-2"
 
         json_worker_server['server']['networks'][0]['port'] = mgnt_worker_port_id
         json_worker_server['server']['networks'][1]['port'] = data_worker_port_id
@@ -442,6 +442,7 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
     for i in range(cant_workers):
         r_data_port_worker = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + '/v2.0/ports?name=' + slice_id + '_cluster_worker' + str(i) + '_data_port', headers = { 'X-Auth-Token': token })
         r_dict_data_port_worker = json.loads(r_data_port_worker.text)
+        print(">>> WORKER PORT : " + str(r_dict_data_port_worker))
         data_port_worker_id = r_dict_data_port_worker['ports'][0]['id']
         data_port_worker_mac = r_dict_data_port_worker['ports'][0]['mac_address']
         data_ports_workers_id.append(data_port_worker_id)
@@ -451,6 +452,7 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
     for i in range(cant_masters):
         r_master = requests.get('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + '/v2.1/servers/detail?name=' + slice_id + '_cluster_master' + str(i), headers = { 'X-Auth-Token': token })
         r_dict_master = json.loads(r_master.text)
+        print(">>> MASTER COMPUTE NODE: " + str(r_dict_master))
         compute_node_master = r_dict_master['servers'][0]['OS-EXT-SRV-ATTR:host']
         compute_node_masters.append(compute_node_master)
 
