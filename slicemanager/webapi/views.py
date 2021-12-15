@@ -73,7 +73,7 @@ def return_create_direct_port():
     return { "port": { "name": "", "network_id": "", "binding:vnic_type": "direct" } }
 
 def return_create_server():
-    return { "server": { "name": "", "imageRef": "", "flavorRef": "", "key_name": "mykeypair", "availability_zone": "", "networks": [{ "port": "" }, { "port": "" }] } }
+    return { "server": { "name": "", "imageRef": "", "flavorRef": "", "key_name": "testkey", "availability_zone": "", "networks": [{ "port": "" }, { "port": "" }] } }
 
 def return_access_flow():
     return { "flow": [ { "table_id": "0", "id": "", "priority": "500", "hard-timeout": "0", "idle-timeout": "0", "match": { "vlan-match": { "vlan-id": { "vlan-id": "", "vlan-id-present": "true" } } }, "instructions": { "instruction": [ { "order": "0", "apply-actions": { "action": [ { "order": "0", "output-action": { "output-node-connector": "ALL" } } ] } } ] } } ] }
@@ -323,7 +323,7 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_worker_server['server']['networks'][1]['port'] = data_worker_port_id
 
         r = requests.post('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + "/v2.1/servers", json = json_worker_server, headers = { 'X-Auth-Token': token })
-
+        print(str(json.loads(r.text)))
     return slice_id
 
 def delete_slice_hpc(slice_id, cant_masters, cant_workers):
