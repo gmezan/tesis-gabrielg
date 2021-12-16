@@ -299,11 +299,11 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_master_server['server']['flavorRef'] = FLAVOR_OPENSTACK
 
         if (index % 3) == 0:
-            json_worker_server['server']['availability_zone'] = "nova:worker-1"
+            json_master_server['server']['availability_zone'] = "nova:worker-1"
         elif (index % 3) == 1:
-            json_worker_server['server']['availability_zone'] = "nova:worker-2"
+            json_master_server['server']['availability_zone'] = "nova:worker-2"
         else:
-            json_worker_server['server']['availability_zone'] = "nova:worker-3"
+            json_master_server['server']['availability_zone'] = "nova:worker-3"
 
         json_master_server['server']['networks'][0]['port'] = access_master_port_id
         json_master_server['server']['networks'][1]['port'] = mgnt_master_port_id
