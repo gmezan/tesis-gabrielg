@@ -298,10 +298,12 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_master_server['server']['imageRef'] = IMAGE_OPENSTACK
         json_master_server['server']['flavorRef'] = FLAVOR_OPENSTACK
 
-        if (index % 2) == 0:
-            json_master_server['server']['availability_zone'] = "nova:worker-1"
+        if (index % 3) == 0:
+            json_worker_server['server']['availability_zone'] = "nova:worker-1"
+        elif (index % 3) == 1:
+            json_worker_server['server']['availability_zone'] = "nova:worker-2"
         else:
-            json_master_server['server']['availability_zone'] = "nova:worker-2"
+            json_worker_server['server']['availability_zone'] = "nova:worker-3"
 
         json_master_server['server']['networks'][0]['port'] = access_master_port_id
         json_master_server['server']['networks'][1]['port'] = mgnt_master_port_id
@@ -314,10 +316,12 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_worker_server['server']['imageRef'] = IMAGE_OPENSTACK
         json_worker_server['server']['flavorRef'] = FLAVOR_OPENSTACK
 
-        if (index % 2) == 0:
+        if (index % 3) == 0:
             json_worker_server['server']['availability_zone'] = "nova:worker-1"
-        else:
+        elif (index % 3) == 1:
             json_worker_server['server']['availability_zone'] = "nova:worker-2"
+        else:
+            json_worker_server['server']['availability_zone'] = "nova:worker-3"
 
         json_worker_server['server']['networks'][0]['port'] = mgnt_worker_port_id
         json_worker_server['server']['networks'][1]['port'] = data_worker_port_id
