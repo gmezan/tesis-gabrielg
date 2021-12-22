@@ -460,8 +460,9 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
         compute_node_master = r_dict_master['servers'][0]['OS-EXT-SRV-ATTR:host']
         compute_node_masters.append(compute_node_master)
 
-    master_openflow_port_array = get_compute_openflow_port(compute_node_masters)
     print("var compute_node_masters ---> " + str(compute_node_masters))
+    master_openflow_port_array = get_compute_openflow_port(compute_node_masters)
+    
 
     compute_node_workers = []
     for i in range(cant_workers):
@@ -470,8 +471,9 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
         compute_node_worker = r_dict_worker['servers'][0]['OS-EXT-SRV-ATTR:host']
         compute_node_workers.append(compute_node_worker)
 
-    worker_openflow_port_array = get_compute_openflow_port(compute_node_workers)
     print("var compute_node_workers ---> " + str(compute_node_workers))
+    worker_openflow_port_array = get_compute_openflow_port(compute_node_workers)
+    
 
     mgnt_masters=[]
     for mgnt_port_master_mac, master_openflow_port in zip(mgnt_ports_masters_mac,master_openflow_port_array):
