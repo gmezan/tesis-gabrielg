@@ -70,7 +70,7 @@ def return_create_subnet_without_gateway():
 def return_create_port():
     return { "port": { "name": "", "network_id": "" } }
 def return_create_direct_port():
-    return { "port": { "name": "", "network_id": "", "binding:vnic_type": "direct" } }
+    return { "port": { "name": "", "network_id": "", "binding:vnic_type": "normal" } }
 
 def return_create_server():
     return { "server": { "name": "", "imageRef": "", "flavorRef": "", "key_name": "testkey", "availability_zone": "", "networks": [{ "port": "" }, { "port": "" }] } }
