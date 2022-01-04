@@ -1,0 +1,12 @@
+https://pypi.org/project/python-environ/
+
+
+
+
+N = 7
+
+counter = 1 # num_vm 
+
+worker_index = counter % N
+worker_index = 7 if worker_index == 0 else worker_index
+worker_name = "nova:worker-" + worker_index
