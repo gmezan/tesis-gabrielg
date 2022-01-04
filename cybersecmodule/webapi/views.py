@@ -8,8 +8,20 @@ import requests
 import json
 import copy
 
-SLICE_MANAGER_IP = '10.0.0.1'
-SLICE_MANAGER_PORT = '8000'
+import environ
+import os
+
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+
+# Set the project base directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+SLICE_MANAGER_IP = env('SLICE_MANAGER_IP')
+SLICE_MANAGER_PORT = env('SLICE_MANAGER_PORT')
 
 """
 =====================================================================================

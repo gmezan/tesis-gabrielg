@@ -4,37 +4,51 @@ from django.views.decorators.csrf import csrf_exempt
 from requests.auth import HTTPBasicAuth
 from random import randrange
 
+from .methods import *
+
 import requests
 import json
 import copy
 import uuid
 import random
 
-ODL_IP = '10.0.0.1'
-ODL_API_port = '8181'
+import environ
+import os
+
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+
+# Set the project base directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+ODL_IP = env('ODL_IP')
+ODL_API_port = env('ODL_API_port')
 ODL_BASE_URL = 'http://' + ODL_IP + ':' + ODL_API_port
-ODL_user = 'admin'
-ODL_password = 'admin'
-ODL_switch_id = '431646109239664'
+ODL_user = env('ODL_user')
+ODL_password = env('ODL_password')
+ODL_switch_id = env('ODL_switch_id')
 
-CONTROLLER_IP = '10.0.0.1'
-COMPUTE_API_PORT = '8774'
-IDENTITY_API_PORT = '5000'
-IMAGE_API_PORT = '9292'
-NETWORK_API_PORT = '9696'
-PLACEMENT_API_PORT = '8778'
-IMAGE_OPENSTACK = "01fbec27-00c6-4ed0-ad7b-3cab1db9aecf"
-FLAVOR_OPENSTACK = "60f6b74d-4a46-45ef-ab38-827e10d046ab"
+CONTROLLER_IP = env('CONTROLLER_IP')
+COMPUTE_API_PORT = env('COMPUTE_API_PORT')
+IDENTITY_API_PORT = env('IDENTITY_API_PORT')
+IMAGE_API_PORT = env('IMAGE_API_PORT')
+NETWORK_API_PORT = env('NETWORK_API_PORT')
+PLACEMENT_API_PORT = env('PLACEMENT_API_PORT')
+IMAGE_OPENSTACK = env('IMAGE_OPENSTACK')
+FLAVOR_OPENSTACK = env('FLAVOR_OPENSTACK')
 
-SLICE_MANAGER_IP = '10.0.0.1'
-SLICE_MANAGER_PORT = '8000'
-CYBERSECURITY_MODULE_IP = '10.0.0.1'
-CYBERSECURITY_MODULE_PORT = '8001'
+SLICE_MANAGER_IP = env('SLICE_MANAGER_IP')
+SLICE_MANAGER_PORT = env('SLICE_MANAGER_PORT')
+CYBERSECURITY_MODULE_IP = env('CYBERSECURITY_MODULE_IP')
+CYBERSECURITY_MODULE_PORT = env('CYBERSECURITY_MODULE_PORT')
 
 controller_openflow_port_dict = { "dev-head-node_openflow_port": "6" }
 computes_openflow_port_dict = { "worker-1_openflow_port": "7", "worker-2_openflow_port": "8"}
 
-compute_availability_zone = ["nova:worker-1", "nova:worker-2"]
+compute_availability_zone = env.list('COMPUTE_AVAILABILITY_ZONE')
 
 """
 =====================================================================================
@@ -46,58 +60,7 @@ auth_data_admin = { "auth": { "identity": { "methods": [ "password" ], "password
 
 security_group = { "security_group": { "name": "", "description": "" } }
 sg_default_rules = { "security_group_rule": { "direction": "egress", "remote_ip_prefix": "", "security_group_id": "" } }
-def return_sg_default_rules():
-    return { "security_group_rule": { "direction": "egress", "remote_ip_prefix": "", "security_group_id": "" } }
-def return_all_tcp_sg_rule():
-    return { "security_group_rule": { "direction": "ingress", "protocol": "tcp", "remote_ip_prefix": "", "security_group_id": "" } }
-def return_tcp_port_sg_rule():
-    return { "security_group_rule": { "direction": "ingress", "port_range_min": "", "port_range_max": "", "protocol": "tcp", "remote_ip_prefix": "", "security_group_id": "" } }
-def return_set_unset_sg_to_port():
-    return { "port": { "security_groups": [] } }
-def return_create_router():
-    return { "router": { "name": "", "external_gateway_info": { "network_id": "" } } }
-def return_config_interface_router():
-    return { "subnet_id": "" }
-def return_remote_sg_rule():
-    return { "security_group_rule": { "direction": "ingress", "ethertype": "IPv4", "remote_group_id": "", "security_group_id": "" } }
 
-def return_create_net():
-    return { "network": { "name": "", "provider:network_type": "vlan", "provider:physical_network": "" } }
-def return_create_subnet():
-    return { "subnet": { "name": "", "network_id": "", "ip_version": "4", "cidr": "", "enable_dhcp": "", "dns_nameservers": [ "8.8.8.8", "8.8.8.4" ] } }
-def return_create_subnet_without_gateway():
-    return { "subnet": { "name": "", "network_id": "", "ip_version": "4", "cidr": "", "enable_dhcp": "", "gateway_ip": None, "dns_nameservers": [ "8.8.8.8", "8.8.8.4" ] } }
-def return_create_port():
-    return { "port": { "name": "", "network_id": "" } }
-def return_create_direct_port():
-    return { "port": { "name": "", "network_id": "", "binding:vnic_type": "normal" } }
-
-def return_create_server():
-    return { "server": { "name": "", "imageRef": "", "flavorRef": "", "key_name": "testkey", "availability_zone": "", "networks": [{ "port": "" }, { "port": "" }] } }
-
-def return_access_flow():
-    return { "flow": [ { "table_id": "0", "id": "", "priority": "500", "hard-timeout": "0", "idle-timeout": "0", "match": { "vlan-match": { "vlan-id": { "vlan-id": "", "vlan-id-present": "true" } } }, "instructions": { "instruction": [ { "order": "0", "apply-actions": { "action": [ { "order": "0", "output-action": { "output-node-connector": "ALL" } } ] } } ] } } ] }
-def return_mgnt_flow_type1():
-    return { "flow": [ { "table_id": "0", "id": "", "priority": "", "match": { "in-port": "openflow::", "ethernet-match": { "ethernet-source": { "address": "" }, "ethernet-destination": { "address": "" } }, "vlan-match": { "vlan-id": { "vlan-id": "", "vlan-id-present": "true" } } }, "instructions": { "instruction": [ { "order": 0, "apply-actions": { "action": [ { "order": 0, "output-action": { "output-node-connector": "" } } ] } } ] } } ] }
-def return_mgnt_flow_type2():
-    return { "flow": [ { "table_id": "0", "id": "", "priority": "", "match": { "in-port": "", "ethernet-match": { "ethernet-source": { "address": "" } }, "vlan-match": { "vlan-id": { "vlan-id": "", "vlan-id-present": "true" } } }, "instructions": { "instruction": [ { "order": 0, "apply-actions": { "action": [ { "order": 0, "group-action": { "group": "", "group-id": "" } } ] } } ] } } ] }
-def return_mgnt_flow_type3():
-    return { "flow": [ { "table_id": "0", "id": "", "priority": "", "match": { "in-port": "openflow::", "ethernet-match": { "ethernet-source": { "address": "" }, "ethernet-destination": { "address": "" } }, "vlan-match": { "vlan-id": { "vlan-id": "", "vlan-id-present": "true" } } }, "instructions": { "instruction": [ { "order": 0, "apply-actions": { "action": [ { "order": 0, "output-action": { "output-node-connector": "" } } ] } } ] } } ] }
-def return_mgnt_flow_type4():
-    return { "flow": [ { "table_id": "0", "id": "", "priority": "", "match": { "ethernet-match": { "ethernet-destination": { "address": "" } }, "vlan-match": { "vlan-id": { "vlan-id": "", "vlan-id-present": "true" } } }, "instructions": { "instruction": [ { "order": 0, "apply-actions": { "action": [ { "order": 0, "drop-action": {} } ] } } ] } } ] }
-def return_mgnt_flow_type5():
-    return { "flow": [ { "table_id": "0", "id": "", "priority": "", "match": { "in-port": "", "ethernet-match": { "ethernet-source": { "address": "" } }, "vlan-match": { "vlan-id": { "vlan-id": "", "vlan-id-present": "true" } } }, "instructions": { "instruction": [ { "order": 0, "apply-actions": { "action": [ { "order": 0, "group-action": { "group": "", "group-id": "" } } ] } } ] } } ] }
-def return_data_flow_type1():
-    return { "flow": [ { "table_id": "0", "id": "", "priority": "", "match": { "in-port": "openflow::", "ethernet-match": { "ethernet-source": { "address": "" }, "ethernet-destination": { "address": "" } }, "vlan-match": { "vlan-id": { "vlan-id": "", "vlan-id-present": "true" } } }, "instructions": { "instruction": [ { "order": 0, "apply-actions": { "action": [ { "order": 0, "output-action": { "output-node-connector": "" } } ] } } ] } } ] }
-def return_data_flow_type2():
-    return { "flow": [ { "table_id": "0", "id": "", "priority": "", "match": { "in-port": "", "ethernet-match": { "ethernet-source": { "address": "" } }, "vlan-match": { "vlan-id": { "vlan-id": "", "vlan-id-present": "true" } } }, "instructions": { "instruction": [ { "order": 0, "apply-actions": { "action": [ { "order": 0, "group-action": { "group": "", "group-id": "" } } ] } } ] } } ] }
-def return_default_vlan_drop_flow():
-    return { "flow": [ { "table_id": "0", "id": "", "priority": "", "match": { "vlan-match": { "vlan-id": { "vlan-id": "", "vlan-id-present": "true" } } }, "instructions": { "instruction": [ { "order": 0, "apply-actions": { "action": [ { "order": 0, "drop-action": {} } ] } } ] } } ] }
-
-def return_group_table():
-    return { "flow-node-inventory:group": [ { "group-id": "", "barrier": "false", "group-name": "", "buckets": { "bucket": [] }, "group-type": "group-all" } ] }
-def return_bucket():
-    return { "bucket-id": "", "action": [ { "order": "0", "output-action": { "output-node-connector": "" } } ] }
 
 """
 =====================================================================================
@@ -298,12 +261,7 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_master_server['server']['imageRef'] = IMAGE_OPENSTACK
         json_master_server['server']['flavorRef'] = FLAVOR_OPENSTACK
 
-        if (index % 3) == 0:
-            json_master_server['server']['availability_zone'] = "nova:worker-1"
-        elif (index % 3) == 1:
-            json_master_server['server']['availability_zone'] = "nova:worker-2"
-        else:
-            json_master_server['server']['availability_zone'] = "nova:worker-3"
+        json_master_server['server']['availability_zone'] = compute_availability_zone[index % len(compute_availability_zone)]
 
         json_master_server['server']['networks'][0]['port'] = access_master_port_id
         json_master_server['server']['networks'][1]['port'] = mgnt_master_port_id
@@ -316,12 +274,7 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_worker_server['server']['imageRef'] = IMAGE_OPENSTACK
         json_worker_server['server']['flavorRef'] = FLAVOR_OPENSTACK
 
-        if (index % 3) == 0:
-            json_worker_server['server']['availability_zone'] = "nova:worker-1"
-        elif (index % 3) == 1:
-            json_worker_server['server']['availability_zone'] = "nova:worker-2"
-        else:
-            json_worker_server['server']['availability_zone'] = "nova:worker-3"
+        json_master_server['server']['availability_zone'] = compute_availability_zone[index % len(compute_availability_zone)]
 
         json_worker_server['server']['networks'][0]['port'] = mgnt_worker_port_id
         json_worker_server['server']['networks'][1]['port'] = data_worker_port_id
