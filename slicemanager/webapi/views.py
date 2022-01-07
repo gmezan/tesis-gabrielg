@@ -45,6 +45,13 @@ SLICE_MANAGER_PORT = env('SLICE_MANAGER_PORT')
 CYBERSECURITY_MODULE_IP = env('CYBERSECURITY_MODULE_IP')
 CYBERSECURITY_MODULE_PORT = env('CYBERSECURITY_MODULE_PORT')
 
+OS_USERNAME = env('OS_USERNAME')
+OS_PASSWORD = env('OS_PASSWORD')
+OS_USER_DOMAIN_ID = env('OS_USER_DOMAIN_ID')
+OS_PROJECT_NAME = env('OS_PROJECT_NAME')
+OS_PROJECT_DOMAIN_ID = env('OS_PROJECT_DOMAIN_ID')
+
+
 controller_openflow_port_dict = { "dev-head-node_openflow_port": "6" }
 computes_openflow_port_dict = { "worker-1_openflow_port": "7", "worker-2_openflow_port": "8"}
 
@@ -56,7 +63,7 @@ compute_availability_zone = env.list('COMPUTE_AVAILABILITY_ZONE')
 =====================================================================================
 """
 
-auth_data_admin = { "auth": { "identity": { "methods": [ "password" ], "password": { "user": { "domain": { "id": "default" }, "name": "admin", "password": "openstack" } } }, "scope": { "project": { "domain": { "id": "default" }, "name": "admin" } } } }
+auth_data_admin = { "auth": { "identity": { "methods": [ "password" ], "password": { "user": { "domain": { "id": OS_USER_DOMAIN_ID }, "name": OS_USERNAME, "password": OS_PASSWORD } } }, "scope": { "project": { "domain": { "id": OS_PROJECT_DOMAIN_ID }, "name": OS_PROJECT_NAME } } } }
 
 security_group = { "security_group": { "name": "", "description": "" } }
 sg_default_rules = { "security_group_rule": { "direction": "egress", "remote_ip_prefix": "", "security_group_id": "" } }
