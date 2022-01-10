@@ -141,8 +141,7 @@ def create_slice_hpc(cant_masters, cant_workers):
 
     json_create_net = return_create_net()
     json_create_net['network']['name'] = slice_id + '_cluster_access_net'
-    json_create_net['network']['provider:physical_network'] = 'provider'
-    print("Sending post...")
+    json_create_net['network']['provider:physical_network'] = 'physnet1'
     r_create_access_net = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks", json = json_create_net, headers = { 'X-Auth-Token': token })
     print(json.loads(r_create_access_net.text))
     r_dict_create_access_net = json.loads(r_create_access_net.text)
@@ -150,21 +149,21 @@ def create_slice_hpc(cant_masters, cant_workers):
 
     json_create_net = return_create_net()
     json_create_net['network']['name'] = slice_id + '_cluster_mgnt_net'
-    json_create_net['network']['provider:physical_network'] = 'provider'
+    json_create_net['network']['provider:physical_network'] = 'physnet1'
     json_create_net['network']['port_security_enabled'] = 'false'
     r_create_mgnt_net = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks", json = json_create_net, headers = { 'X-Auth-Token': token })
     r_dict_create_mgnt_net = json.loads(r_create_mgnt_net.text)
     mgnt_net_id = r_dict_create_mgnt_net['network']['id']
-    mgnt_net_vlan = str(r_dict_create_mgnt_net['network']['provider:segmentation_id'])
+    #mgnt_net_vlan = str(r_dict_create_mgnt_net['network']['provider:segmentation_id'])
 
     json_create_net = return_create_net()
     json_create_net['network']['name'] = slice_id + '_cluster_data_net'
-    json_create_net['network']['provider:physical_network'] = 'provider'
+    json_create_net['network']['provider:physical_network'] = 'physnet1'
     json_create_net['network']['port_security_enabled'] = 'false'
     r_create_data_net = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks", json = json_create_net, headers = { 'X-Auth-Token': token })
     r_dict_create_data_net = json.loads(r_create_data_net.text)
     data_net_id = r_dict_create_data_net['network']['id']
-    data_net_vlan = str(r_dict_create_data_net['network']['provider:segmentation_id'])
+    #data_net_vlan = str(r_dict_create_data_net['network']['provider:segmentation_id'])
 
     """ CREAR SUBREDES """
 
