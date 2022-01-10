@@ -144,7 +144,7 @@ def create_slice_hpc(cant_masters, cant_workers):
     json_create_net['network']['provider:physical_network'] = 'provider'
     print("Sending post...")
     r_create_access_net = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks", json = json_create_net, headers = { 'X-Auth-Token': token })
-    
+    print(json.loads(r_create_access_net.text))
     r_dict_create_access_net = json.loads(r_create_access_net.text)
     access_net_id = r_dict_create_access_net['network']['id']
 
