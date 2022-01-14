@@ -4,69 +4,16 @@ from django.views.decorators.csrf import csrf_exempt
 from requests.auth import HTTPBasicAuth
 from random import randrange
 
+from slicemanager.webapi.openstack_requests import create_direct_port_request, create_port_request
+
 from .methods import *
+from .configuration import *
 
 import requests
 import json
 import copy
 import uuid
 import random
-
-import environ
-import os
-
-env = environ.Env(
-    # set casting, default value
-    DEBUG=(bool, False)
-)
-
-# Set the project base directory
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-
-ODL_IP = env('ODL_IP')
-ODL_API_port = env('ODL_API_port')
-ODL_BASE_URL = 'http://' + ODL_IP + ':' + ODL_API_port
-ODL_user = env('ODL_user')
-ODL_password = env('ODL_password')
-ODL_switch_id = env('ODL_switch_id')
-
-CONTROLLER_IP = env('CONTROLLER_IP')
-COMPUTE_API_PORT = env('COMPUTE_API_PORT')
-IDENTITY_API_PORT = env('IDENTITY_API_PORT')
-IMAGE_API_PORT = env('IMAGE_API_PORT')
-NETWORK_API_PORT = env('NETWORK_API_PORT')
-PLACEMENT_API_PORT = env('PLACEMENT_API_PORT')
-IMAGE_OPENSTACK = env('IMAGE_OPENSTACK')
-FLAVOR_OPENSTACK = env('FLAVOR_OPENSTACK')
-
-SLICE_MANAGER_IP = env('SLICE_MANAGER_IP')
-SLICE_MANAGER_PORT = env('SLICE_MANAGER_PORT')
-CYBERSECURITY_MODULE_IP = env('CYBERSECURITY_MODULE_IP')
-CYBERSECURITY_MODULE_PORT = env('CYBERSECURITY_MODULE_PORT')
-
-OS_USERNAME = env('OS_USERNAME')
-OS_PASSWORD = env('OS_PASSWORD')
-OS_USER_DOMAIN_ID = env('OS_USER_DOMAIN_ID')
-OS_PROJECT_NAME = env('OS_PROJECT_NAME')
-OS_PROJECT_DOMAIN_ID = env('OS_PROJECT_DOMAIN_ID')
-
-
-controller_openflow_port_dict = { "dev-head-node_openflow_port": "6" }
-computes_openflow_port_dict = { "worker-1_openflow_port": "7", "worker-2_openflow_port": "8"}
-
-compute_availability_zone = env.list('COMPUTE_AVAILABILITY_ZONE')
-
-"""
-=====================================================================================
-=====================================================================================
-=====================================================================================
-"""
-
-auth_data_admin = { "auth": { "identity": { "methods": [ "password" ], "password": { "user": { "domain": { "id": OS_USER_DOMAIN_ID }, "name": OS_USERNAME, "password": OS_PASSWORD } } }, "scope": { "project": { "domain": { "id": OS_PROJECT_DOMAIN_ID }, "name": OS_PROJECT_NAME } } } }
-
-security_group = { "security_group": { "name": "", "description": "" } }
-sg_default_rules = { "security_group_rule": { "direction": "egress", "remote_ip_prefix": "", "security_group_id": "" } }
 
 
 """
@@ -139,17 +86,17 @@ def create_slice_hpc(cant_masters, cant_workers):
 
     """ CREAR REDES """
 
-    json_create_net = return_create_net()
-    json_create_net['network']['name'] = slice_id + '_cluster_access_net'
-    json_create_net['network']['provider:physical_network'] = 'physnet1'
-    r_create_access_net = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks", json = json_create_net, headers = { 'X-Auth-Token': token })
-    print(json.loads(r_create_access_net.text))
-    r_dict_create_access_net = json.loads(r_create_access_net.text)
-    access_net_id = r_dict_create_access_net['network']['id']
+    #json_create_net = return_create_net()
+    #json_create_net['network']['name'] = slice_id + '_cluster_access_net'
+    #json_create_net['network']['provider:physical_network'] = OVS_NETWORK
+    #r_create_access_net = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks", json = json_create_net, headers = { 'X-Auth-Token': token })
+    #print(json.loads(r_create_access_net.text))
+    #r_dict_create_access_net = json.loads(r_create_access_net.text)
+    #access_net_id = r_dict_create_access_net['network']['id']
 
     json_create_net = return_create_net()
     json_create_net['network']['name'] = slice_id + '_cluster_mgnt_net'
-    json_create_net['network']['provider:physical_network'] = 'physnet1'
+    json_create_net['network']['provider:physical_network'] = SRIOV_NETWORK
     json_create_net['network']['port_security_enabled'] = 'false'
     r_create_mgnt_net = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks", json = json_create_net, headers = { 'X-Auth-Token': token })
     r_dict_create_mgnt_net = json.loads(r_create_mgnt_net.text)
@@ -158,7 +105,7 @@ def create_slice_hpc(cant_masters, cant_workers):
 
     json_create_net = return_create_net()
     json_create_net['network']['name'] = slice_id + '_cluster_data_net'
-    json_create_net['network']['provider:physical_network'] = 'physnet1'
+    json_create_net['network']['provider:physical_network'] = SRIOV_NETWORK
     json_create_net['network']['port_security_enabled'] = 'false'
     r_create_data_net = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks", json = json_create_net, headers = { 'X-Auth-Token': token })
     r_dict_create_data_net = json.loads(r_create_data_net.text)
@@ -167,14 +114,14 @@ def create_slice_hpc(cant_masters, cant_workers):
 
     """ CREAR SUBREDES """
 
-    json_create_subnet = return_create_subnet()
-    json_create_subnet['subnet']['name'] = slice_id + '_cluster_access_subnet'
-    json_create_subnet['subnet']['network_id'] = access_net_id
-    json_create_subnet['subnet']['cidr'] = '10.' + str(randrange(1,254)) + '.' + str(randrange(1,254)) + '.0/24'
-    json_create_subnet['subnet']['enable_dhcp'] = 'true'
-    r_create_access_subnet = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/subnets", json = json_create_subnet, headers = { 'X-Auth-Token': token })
-    r_dict_create_access_subnet = json.loads(r_create_access_subnet.text)
-    access_subnet_id = r_dict_create_access_subnet['subnet']['id']
+    #json_create_subnet = return_create_subnet()
+    #json_create_subnet['subnet']['name'] = slice_id + '_cluster_access_subnet'
+    #json_create_subnet['subnet']['network_id'] = access_net_id
+    #json_create_subnet['subnet']['cidr'] = '10.' + str(randrange(1,254)) + '.' + str(randrange(1,254)) + '.0/24'
+    #json_create_subnet['subnet']['enable_dhcp'] = 'true'
+    #r_create_access_subnet = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/subnets", json = json_create_subnet, headers = { 'X-Auth-Token': token })
+    #r_dict_create_access_subnet = json.loads(r_create_access_subnet.text)
+    #access_subnet_id = r_dict_create_access_subnet['subnet']['id']
 
     json_create_subnet = return_create_subnet_without_gateway()
     json_create_subnet['subnet']['name'] = slice_id + '_cluster_mgnt_subnet'
@@ -199,65 +146,53 @@ def create_slice_hpc(cant_masters, cant_workers):
     access_master_ports_ids = []
     for i in range(cant_masters):
         access_port_master_name = slice_id + '_cluster_master' + str(i) + '_access_port'                
-        json_port = return_create_port()
-        json_port['port']['name'] = access_port_master_name
-        json_port['port']['network_id'] = access_net_id
+        json_port = create_port_request(access_port_master_name, MANAGEMENT_NET_ID)
         r_create_port = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/ports", json = json_port, headers = { 'X-Auth-Token': token })
         r_dict_create_port = json.loads(r_create_port.text)
-        access_master_port_id = r_dict_create_port['port']['id']
-        access_master_ports_ids.append(access_master_port_id)
+        access_master_ports_ids.append(r_dict_create_port['port']['id'])
 
     mgnt_master_ports_ids = []
     for i in range(cant_masters):
         mgnt_port_master_name = slice_id + '_cluster_master' + str(i) + '_mgnt_port'                
-        json_port = return_create_direct_port()
-        json_port['port']['name'] = mgnt_port_master_name
-        json_port['port']['network_id'] = mgnt_net_id
+        json_port = create_direct_port_request(mgnt_port_master_name, mgnt_net_id)
         r_create_port = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/ports", json = json_port, headers = { 'X-Auth-Token': token })
         r_dict_create_port = json.loads(r_create_port.text)
-        mgnt_master_port_id = r_dict_create_port['port']['id']
-        mgnt_master_ports_ids.append(mgnt_master_port_id)
+        mgnt_master_ports_ids.append(r_dict_create_port['port']['id'])
 
     mgnt_worker_ports_ids = []
     for i in range(cant_workers):
         mgnt_port_worker_name = slice_id + '_cluster_worker' + str(i) + '_mgnt_port'                
-        json_port = return_create_direct_port()
-        json_port['port']['name'] = mgnt_port_worker_name
-        json_port['port']['network_id'] = mgnt_net_id
+        json_port = create_direct_port_request(mgnt_port_worker_name, mgnt_net_id)
         r_create_port = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/ports", json = json_port, headers = { 'X-Auth-Token': token })
         r_dict_create_port = json.loads(r_create_port.text)
-        mgnt_worker_port_id = r_dict_create_port['port']['id']
-        mgnt_worker_ports_ids.append(mgnt_worker_port_id)
+        mgnt_worker_ports_ids.append(r_dict_create_port['port']['id'])
 
     data_worker_ports_ids = []
     for i in range(cant_workers):
         data_port_worker_name = slice_id + '_cluster_worker' + str(i) + '_data_port'                
-        json_port = return_create_direct_port()
-        json_port['port']['name'] = data_port_worker_name
-        json_port['port']['network_id'] = data_net_id
+        json_port = create_direct_port_request(data_port_worker_name, data_net_id)
         r_create_port = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/ports", json = json_port, headers = { 'X-Auth-Token': token })
         r_dict_create_port = json.loads(r_create_port.text)
-        data_worker_port_id = r_dict_create_port['port']['id']
-        data_worker_ports_ids.append(data_worker_port_id)
+        data_worker_ports_ids.append(r_dict_create_port['port']['id'])
 
     """ CREAR ROUTER """
 
     # Se cambia external_provider por provider1
-    r_external_provider_net = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks?name=external_provider", headers = { 'X-Auth-Token': token })
-    r_dict_external_provider_net = json.loads(r_external_provider_net.text)
-    external_provider_net_id = r_dict_external_provider_net['networks'][0]['id']
+    #r_external_provider_net = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks?name=external_provider", headers = { 'X-Auth-Token': token })
+    #r_dict_external_provider_net = json.loads(r_external_provider_net.text)
+    #external_provider_net_id = r_dict_external_provider_net['networks'][0]['id']
 
-    json_router = return_create_router()
-    json_router['router']['name'] = slice_id + '_cluster_router'
-    json_router['router']['external_gateway_info']['network_id'] = external_provider_net_id
-    r_create_router = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers", json = json_router, headers = { 'X-Auth-Token': token })
-    r_dict_create_router = json.loads(r_create_router.text)
-    print(str(r_dict_create_router))
-    router_id = r_dict_create_router['router']['id']
+    #json_router = return_create_router()
+    #json_router['router']['name'] = slice_id + '_cluster_router'
+    #json_router['router']['external_gateway_info']['network_id'] = external_provider_net_id
+    #r_create_router = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers", json = json_router, headers = { 'X-Auth-Token': token })
+    #r_dict_create_router = json.loads(r_create_router.text)
+    #print(str(r_dict_create_router))
+    #router_id = r_dict_create_router['router']['id']
 
-    json_config_interface_router = return_config_interface_router()
-    json_config_interface_router['subnet_id'] = access_subnet_id
-    r_config_interface_router = requests.put('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers/" + router_id + "/add_router_interface", json = json_config_interface_router, headers = { 'X-Auth-Token': token })
+    #json_config_interface_router = return_config_interface_router()
+    #json_config_interface_router['subnet_id'] = access_subnet_id
+    #r_config_interface_router = requests.put('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers/" + router_id + "/add_router_interface", json = json_config_interface_router, headers = { 'X-Auth-Token': token })
 
     """ CREAR VMs """
 
