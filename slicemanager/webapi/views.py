@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from requests.auth import HTTPBasicAuth
 from random import randrange
 
-from slicemanager.webapi.openstack_requests import create_direct_port_request, create_port_request
+from .openstack_requests import create_direct_port_request, create_port_request
 
 from .methods import *
 from .configuration import *
