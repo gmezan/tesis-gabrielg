@@ -1,3 +1,5 @@
+from .configuration import KEY_PAIR_NAME
+
 def return_sg_default_rules():
     return { "security_group_rule": { "direction": "egress", "remote_ip_prefix": "", "security_group_id": "" } }
 def return_all_tcp_sg_rule():
@@ -25,7 +27,7 @@ def return_create_direct_port():
     return { "port": { "name": "", "network_id": "", "binding:vnic_type": "normal" } }
 
 def return_create_server():
-    return { "server": { "name": "", "imageRef": "", "flavorRef": "", "key_name": "testkey", "availability_zone": "", "networks": [{ "port": "" }, { "port": "" }] } }
+    return { "server": { "name": "", "imageRef": "", "flavorRef": "", "key_name": KEY_PAIR_NAME, "availability_zone": "", "networks": [{ "port": "" }, { "port": "" }] } }
 
 def return_access_flow():
     return { "flow": [ { "table_id": "0", "id": "", "priority": "500", "hard-timeout": "0", "idle-timeout": "0", "match": { "vlan-match": { "vlan-id": { "vlan-id": "", "vlan-id-present": "true" } } }, "instructions": { "instruction": [ { "order": "0", "apply-actions": { "action": [ { "order": "0", "output-action": { "output-node-connector": "ALL" } } ] } } ] } } ] }
