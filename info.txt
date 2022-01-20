@@ -1,0 +1,7 @@
+# Creacion de logs
+0. creacion de variables de entorno
+1. adaptar el codigo a la infraestructura del vnrt
+2. adaptar el codigo para crear vms, y probar
+3. Prueba con otras img (ubuntu), validar conectividad
+4. Analizar los flows
+5. Analizar security groups de openstack 

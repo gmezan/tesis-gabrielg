@@ -13,14 +13,10 @@ import requests
 import json
 import copy
 import uuid
-import random
+import logging
 
+logger = logging.getLogger('slicemanager.views')
 
-"""
-=====================================================================================
-=====================================================================================
-=====================================================================================
-"""
 
 """ HANDLE CLIENT REQUEST - CREATE HPC SLICE """
 
@@ -207,7 +203,8 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_master_server['server']['networks'][0]['port'] = access_master_port_id
         json_master_server['server']['networks'][1]['port'] = mgnt_master_port_id
 
-        #r = requests.post('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + "/v2.1/servers", json = json_master_server, headers = { 'X-Auth-Token': token })
+        r = requests.post('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + "/v2.1/servers", json = json_master_server, headers = { 'X-Auth-Token': token })
+        logger.info("Master VM creation: " + json.loads(r.text))
 
     for index, (mgnt_worker_port_id, data_worker_port_id) in enumerate(zip(mgnt_worker_ports_ids, data_worker_ports_ids)):
         json_worker_server = return_create_server()
@@ -220,7 +217,8 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_worker_server['server']['networks'][0]['port'] = mgnt_worker_port_id
         json_worker_server['server']['networks'][1]['port'] = data_worker_port_id
 
-        #r = requests.post('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + "/v2.1/servers", json = json_worker_server, headers = { 'X-Auth-Token': token })
+        r = requests.post('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + "/v2.1/servers", json = json_worker_server, headers = { 'X-Auth-Token': token })
+        logger.info("Worker VM creation: " + json.loads(r.text))
 
     return slice_id
 
