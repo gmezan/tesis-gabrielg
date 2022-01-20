@@ -43,6 +43,8 @@ SRIOV_NETWORK = env('SRIOV_NETWORK')
 MANAGEMENT_NET = env('MANAGEMENT_NET')
 MANAGEMENT_NET_ID = env('MANAGEMENT_NET_ID')
 
+KEY_PAIR_NAME = env('KEY_PAIR_NAME')
+
 controller_openflow_port_dict = { "dev-head-node_openflow_port": "6" }
 computes_openflow_port_dict = { "worker-1_openflow_port": "7", "worker-2_openflow_port": "8"}
 
