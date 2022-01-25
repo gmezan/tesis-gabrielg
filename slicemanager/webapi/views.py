@@ -214,7 +214,7 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_worker_server['server']['imageRef'] = IMAGE_OPENSTACK
         json_worker_server['server']['flavorRef'] = FLAVOR_OPENSTACK
 
-        json_master_server['server']['availability_zone'] = compute_availability_zone[index % len(compute_availability_zone)]
+        json_worker_server['server']['availability_zone'] = compute_availability_zone[index % len(compute_availability_zone)]
 
         json_worker_server['server']['networks'][0]['port'] = mgnt_worker_port_id
         json_worker_server['server']['networks'][1]['port'] = data_worker_port_id
