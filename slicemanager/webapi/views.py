@@ -206,7 +206,7 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_master_server['server']['networks'][1]['port'] = mgnt_master_port_id
 
         r = requests.post('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + "/v2.1/servers", json = json_master_server, headers = { 'X-Auth-Token': token })
-        logger.info("Master VM creation: " + str(json.loads(r.text)))
+        print("Master VM creation: " + str(json.loads(r.text)))
 
     for index, (mgnt_worker_port_id, data_worker_port_id) in enumerate(zip(mgnt_worker_ports_ids, data_worker_ports_ids)):
         json_worker_server = return_create_server()
@@ -220,7 +220,7 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_worker_server['server']['networks'][1]['port'] = data_worker_port_id
 
         r = requests.post('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + "/v2.1/servers", json = json_worker_server, headers = { 'X-Auth-Token': token })
-        logger.info("Worker VM creation: " + str(json.loads(r.text)))
+        print("Worker VM creation: " + str(json.loads(r.text)))
 
     return slice_id
 
