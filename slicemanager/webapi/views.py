@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from requests.auth import HTTPBasicAuth
 from random import randrange
+from custom_methods import get_vm_hostname
 
 from .openstack_requests import create_direct_port_request, create_port_request
 
@@ -14,6 +15,7 @@ import json
 import copy
 import uuid
 import logging
+import time
 
 logger = logging.getLogger('slicemanager.views')
 
@@ -313,6 +315,8 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
     data_net_id = r_dict_data_net['networks'][0]['id']
     data_net_vlan = str(r_dict_data_net['networks'][0]['provider:segmentation_id'])
 
+    ### OBTENCION DE PUERTOS PARA LAS VMs
+
     mgnt_ports_masters_id = []
     mgnt_ports_masters_mac = []
     for i in range(cant_masters):
@@ -344,12 +348,15 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
         data_ports_workers_id.append(data_port_worker_id)
         data_ports_workers_mac.append(data_port_worker_mac)
 
+
+
     compute_node_masters = []
     for i in range(cant_masters):
-        r_master = requests.get('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + '/v2.1/servers/detail?name=' + slice_id + '_cluster_master' + str(i), headers = { 'X-Auth-Token': token })
-        r_dict_master = json.loads(r_master.text)
-        print(">>> MASTER COMPUTE NODE: " + str(r_dict_master))
-        compute_node_master = r_dict_master['servers'][0]['OS-EXT-SRV-ATTR:host']
+        compute_node_master = get_vm_hostname(slice_id + '_cluster_master' + str(i), token)
+        compute_node_masters.append(compute_node_master)
+        while compute_node_master == None:
+            time.sleep(DELAY_WAIT_MS)
+            compute_node_master = get_vm_hostname(slice_id + '_cluster_master' + str(i), token)
         compute_node_masters.append(compute_node_master)
 
     print("var compute_node_masters ---> " + str(compute_node_masters))
@@ -358,9 +365,10 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
 
     compute_node_workers = []
     for i in range(cant_workers):
-        r_worker = requests.get('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + '/v2.1/servers/detail?name=' + slice_id + '_cluster_worker' + str(i), headers = { 'X-Auth-Token': token })
-        r_dict_worker = json.loads(r_worker.text)
-        compute_node_worker = r_dict_worker['servers'][0]['OS-EXT-SRV-ATTR:host']
+        compute_node_worker = get_vm_hostname(slice_id + '_cluster_worker' + str(i), token)
+        while compute_node_worker == None:
+            time.sleep(DELAY_WAIT_MS)
+            compute_node_worker = get_vm_hostname(slice_id + '_cluster_worker' + str(i), token)
         compute_node_workers.append(compute_node_worker)
 
     print("var compute_node_workers ---> " + str(compute_node_workers))
