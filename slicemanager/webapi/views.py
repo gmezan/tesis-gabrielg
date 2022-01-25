@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from requests.auth import HTTPBasicAuth
 from random import randrange
-from custom_methods import get_vm_hostname
+from .custom_methods import get_vm_hostname
 
 from .openstack_requests import create_direct_port_request, create_port_request
 
