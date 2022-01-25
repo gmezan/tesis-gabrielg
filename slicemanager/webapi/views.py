@@ -353,7 +353,6 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
     compute_node_masters = []
     for i in range(cant_masters):
         compute_node_master = get_vm_hostname(slice_id + '_cluster_master' + str(i), token)
-        compute_node_masters.append(compute_node_master)
         while compute_node_master == None:
             time.sleep(DELAY_WAIT_MS)
             compute_node_master = get_vm_hostname(slice_id + '_cluster_master' + str(i), token)
