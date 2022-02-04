@@ -422,7 +422,7 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
 def get_compute_openflow_port(server_compute_array):
     server_openflow_port_array = []
     for server_compute in server_compute_array:
-        server_openflow_port = computes_openflow_port_dict[server_compute + '_openflow_port']
+        server_openflow_port = computes_openflow_port_dict[server_compute]
         server_openflow_port_array.append(server_openflow_port)
     return server_openflow_port_array
 
