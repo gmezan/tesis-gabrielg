@@ -177,24 +177,6 @@ def create_slice_hpc(cant_masters, cant_workers):
         r_dict_create_port = json.loads(r_create_port.text)
         data_worker_ports_ids.append(r_dict_create_port['port']['id'])
 
-    """ CREAR ROUTER """
-
-    # Se cambia external_provider por provider1
-    #r_external_provider_net = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks?name=external_provider", headers = { 'X-Auth-Token': token })
-    #r_dict_external_provider_net = json.loads(r_external_provider_net.text)
-    #external_provider_net_id = r_dict_external_provider_net['networks'][0]['id']
-
-    #json_router = return_create_router()
-    #json_router['router']['name'] = slice_id + '_cluster_router'
-    #json_router['router']['external_gateway_info']['network_id'] = external_provider_net_id
-    #r_create_router = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers", json = json_router, headers = { 'X-Auth-Token': token })
-    #r_dict_create_router = json.loads(r_create_router.text)
-    #print(str(r_dict_create_router))
-    #router_id = r_dict_create_router['router']['id']
-
-    #json_config_interface_router = return_config_interface_router()
-    #json_config_interface_router['subnet_id'] = access_subnet_id
-    #r_config_interface_router = requests.put('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers/" + router_id + "/add_router_interface", json = json_config_interface_router, headers = { 'X-Auth-Token': token })
 
     """ CREAR VMs """
 
@@ -273,11 +255,6 @@ def delete_slice_hpc(slice_id, cant_masters, cant_workers):
 
 
     """ ELIMINAR REDES """
-
-    r_get_access_net = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks?name=" + slice_id + '_cluster_access_net', headers = { 'X-Auth-Token': token })
-    r_dict_get_access_net = json.loads(r_get_access_net.text)
-    access_net_id = r_dict_get_access_net['networks'][0]['id']
-    r_delete_net = requests.delete('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks/" + access_net_id, headers = { 'X-Auth-Token': token })
 
     r_get_mgnt_net = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks?name=" + slice_id + '_cluster_mgnt_net', headers = { 'X-Auth-Token': token })
     r_dict_get_mgnt_net = json.loads(r_get_mgnt_net.text)
