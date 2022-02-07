@@ -58,10 +58,8 @@ for j in range(len(compute_availability_zone)):
 
 # Building compute_availability_zone
 for i in range(len(compute_availability_zone)):
-    compute_availability_zone[i] = "nova:" + compute_availability_zone[i];
+    compute_availability_zone[i] = "nova:" + compute_availability_zone[i]
 
-print(computes_openflow_port_dict)
-print(compute_availability_zone)
 
 auth_data_admin = { "auth": { "identity": { "methods": [ "password" ], "password": { "user": { "domain": { "id": OS_USER_DOMAIN_ID }, "name": OS_USERNAME, "password": OS_PASSWORD } } }, "scope": { "project": { "domain": { "id": OS_PROJECT_DOMAIN_ID }, "name": OS_PROJECT_NAME } } } }
 
