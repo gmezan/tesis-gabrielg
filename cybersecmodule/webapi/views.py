@@ -123,7 +123,7 @@ def get_all_slices_security_info(request):
         for slicehpc in slices:
             slice_identifier = slicehpc.slice_identifier
             security_status = slicehpc.security_status
-            security_request_body = slice_by_identifier.security_request_body
+            security_request_body = slice_identifier.security_request_body
             openstack_security_rules = slicehpc.openstack_security_rules
             opendaylight_security_rules = slicehpc.opendaylight_security_rules
 
