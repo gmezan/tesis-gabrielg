@@ -44,7 +44,11 @@ def handle_client_create_request(request):
         }
         print("var slice_info ---> " + str(slice_info))
 
-        r = requests.post('http://' + SLICE_MANAGER_IP + ':' + SLICE_MANAGER_PORT + "/slicemanager/request-apply-security", json = slice_info)
+        #r = requests.post('http://' + SLICE_MANAGER_IP + ':' + SLICE_MANAGER_PORT + "/slicemanager/request-apply-security", json = slice_info)
+
+        r = requests.post('http://' + CYBERSECURITY_MODULE_IP + ':' + CYBERSECURITY_MODULE_PORT + "/cybersecurity/apply-security", json = slice_info)
+
+        print('Seguridad aplicada en el slice HPC: ' + slice_info['slice_id'])
 
         return HttpResponse(str(slice_info))
 
@@ -267,21 +271,6 @@ def delete_slice_hpc(slice_id, cant_masters, cant_workers):
         data_port_worker_id = r_dict_data_port_worker['ports'][0]['id']
         r_delete_port = requests.delete('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/ports/" + data_port_worker_id, headers = { 'X-Auth-Token': token })
 
-    """ ELIMINAR ROUTER """
-
-    r_get_router = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + '/v2.0/routers?name=' + slice_id + '_cluster_router', headers = { 'X-Auth-Token': token })
-    r_dict_router = json.loads(r_get_router.text)
-    router_id = r_dict_router['routers'][0]['id']
-
-    r_get_access_subnet = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/subnets?name=" + slice_id + '_cluster_access_subnet', headers = { 'X-Auth-Token': token })
-    r_dict_get_access_subnet = json.loads(r_get_access_subnet.text)
-    access_subnet_id = r_dict_get_access_subnet['subnets'][0]['id']
-
-    json_config_interface_router = return_config_interface_router()
-    json_config_interface_router['subnet_id'] = access_subnet_id
-    r_config_interface_router = requests.put('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers/" + router_id + "/remove_router_interface", json = json_config_interface_router, headers = { 'X-Auth-Token': token })
-
-    r_delete_router = requests.delete('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers/" + router_id, headers = { 'X-Auth-Token': token })
 
     """ ELIMINAR REDES """
 
