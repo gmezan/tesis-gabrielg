@@ -924,7 +924,9 @@ def generate_data_flow_default_vlan_drop_array(slice_id, data_network_info):
 def generate_opendaylight_json_flows_array(slice_id, mgnt_network_info, data_network_info):
     flows_array = []
 
-    access_flow_array = generate_access_flow_array(slice_id, mgnt_network_info)
+    # TODO: Update access flows
+    # access_flow_array = generate_access_flow_array(slice_id, mgnt_network_info)
+    access_flow_array = []
 
     mgnt_flow_default_vlan_drop_array = generate_mgnt_flow_default_vlan_drop_array(slice_id, mgnt_network_info)
     data_flow_default_vlan_drop_array = generate_data_flow_default_vlan_drop_array(slice_id, data_network_info)
