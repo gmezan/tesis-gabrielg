@@ -12,3 +12,6 @@ cambio de imagen de ubuntu
 
 show openflow flow
 show openflow flow
+
+Flavor para pruebas:
+f=7e56f8ef-8d48-49f8-9731-d9fdd226bceb

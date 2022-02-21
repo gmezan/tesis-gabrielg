@@ -315,25 +315,33 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
         data_ports_workers_mac.append(data_port_worker_mac)
 
 
-
+    
     compute_node_masters = []
     for i in range(cant_masters):
+        aux_counter = 0
         compute_node_master = get_vm_hostname(slice_id + '_cluster_master' + str(i), token)
         while compute_node_master == None:
             time.sleep(DELAY_WAIT_MS)
             compute_node_master = get_vm_hostname(slice_id + '_cluster_master' + str(i), token)
+            aux_counter = aux_counter + 1
+            if aux_counter > MAX_COUNTER:
+                break
         compute_node_masters.append(compute_node_master)
 
     print("var compute_node_masters ---> " + str(compute_node_masters))
     master_openflow_port_array = get_compute_openflow_port(compute_node_masters)
     
-
+    
     compute_node_workers = []
     for i in range(cant_workers):
+        aux_counter = 0
         compute_node_worker = get_vm_hostname(slice_id + '_cluster_worker' + str(i), token)
         while compute_node_worker == None:
             time.sleep(DELAY_WAIT_MS)
             compute_node_worker = get_vm_hostname(slice_id + '_cluster_worker' + str(i), token)
+            aux_counter = aux_counter + 1
+            if aux_counter > MAX_COUNTER:
+                break
         compute_node_workers.append(compute_node_worker)
 
     print("var compute_node_workers ---> " + str(compute_node_workers))

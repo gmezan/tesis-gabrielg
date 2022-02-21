@@ -67,3 +67,4 @@ security_group = { "security_group": { "name": "", "description": "" } }
 sg_default_rules = { "security_group_rule": { "direction": "egress", "remote_ip_prefix": "", "security_group_id": "" } }
 
 DELAY_WAIT_MS = 0.250
+MAX_COUNTER = 10
