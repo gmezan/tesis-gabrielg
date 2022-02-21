@@ -12,3 +12,6 @@ cambio de imagen de ubuntu
 
 show openflow flow
 show openflow flow
+
+i=042bed7a-37aa-4870-a6b9-e728e49389ee
+f=5e7d15a1-fae7-4aa4-9955-156d18ab02b4

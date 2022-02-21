@@ -1,0 +1,7 @@
+
+fdisk -l /dev/vda
+
+Salida al worker:
+ 1. el master es el default gw
+ 2. NAT Mascarade
+ 3. Habilitar enrutamiento en master

@@ -3,7 +3,6 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from requests.auth import HTTPBasicAuth
 from random import randrange
-from .custom_methods import get_vm_hostname
 
 from .openstack_requests import create_direct_port_request, create_port_request
 
@@ -14,11 +13,14 @@ import requests
 import json
 import copy
 import uuid
-import logging
-import time
+import random
 
-logger = logging.getLogger('slicemanager.views')
 
+"""
+=====================================================================================
+=====================================================================================
+=====================================================================================
+"""
 
 """ HANDLE CLIENT REQUEST - CREATE HPC SLICE """
 
@@ -44,11 +46,7 @@ def handle_client_create_request(request):
         }
         print("var slice_info ---> " + str(slice_info))
 
-        #r = requests.post('http://' + SLICE_MANAGER_IP + ':' + SLICE_MANAGER_PORT + "/slicemanager/request-apply-security", json = slice_info)
-
-        r = requests.post('http://' + CYBERSECURITY_MODULE_IP + ':' + CYBERSECURITY_MODULE_PORT + "/cybersecurity/apply-security", json = slice_info)
-
-        print('Seguridad aplicada en el slice HPC: ' + slice_info['slice_id'])
+        r = requests.post('http://' + SLICE_MANAGER_IP + ':' + SLICE_MANAGER_PORT + "/slicemanager/request-apply-security", json = slice_info)
 
         return HttpResponse(str(slice_info))
 
@@ -177,6 +175,24 @@ def create_slice_hpc(cant_masters, cant_workers):
         r_dict_create_port = json.loads(r_create_port.text)
         data_worker_ports_ids.append(r_dict_create_port['port']['id'])
 
+    """ CREAR ROUTER """
+
+    # Se cambia external_provider por provider1
+    #r_external_provider_net = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks?name=external_provider", headers = { 'X-Auth-Token': token })
+    #r_dict_external_provider_net = json.loads(r_external_provider_net.text)
+    #external_provider_net_id = r_dict_external_provider_net['networks'][0]['id']
+
+    #json_router = return_create_router()
+    #json_router['router']['name'] = slice_id + '_cluster_router'
+    #json_router['router']['external_gateway_info']['network_id'] = external_provider_net_id
+    #r_create_router = requests.post('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers", json = json_router, headers = { 'X-Auth-Token': token })
+    #r_dict_create_router = json.loads(r_create_router.text)
+    #print(str(r_dict_create_router))
+    #router_id = r_dict_create_router['router']['id']
+
+    #json_config_interface_router = return_config_interface_router()
+    #json_config_interface_router['subnet_id'] = access_subnet_id
+    #r_config_interface_router = requests.put('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers/" + router_id + "/add_router_interface", json = json_config_interface_router, headers = { 'X-Auth-Token': token })
 
     """ CREAR VMs """
 
@@ -191,8 +207,7 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_master_server['server']['networks'][0]['port'] = access_master_port_id
         json_master_server['server']['networks'][1]['port'] = mgnt_master_port_id
 
-        r = requests.post('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + "/v2.1/servers", json = json_master_server, headers = { 'X-Auth-Token': token })
-        print("Master VM creation: " + str(json.loads(r.text)))
+        #r = requests.post('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + "/v2.1/servers", json = json_master_server, headers = { 'X-Auth-Token': token })
 
     for index, (mgnt_worker_port_id, data_worker_port_id) in enumerate(zip(mgnt_worker_ports_ids, data_worker_ports_ids)):
         json_worker_server = return_create_server()
@@ -200,13 +215,12 @@ def create_slice_hpc(cant_masters, cant_workers):
         json_worker_server['server']['imageRef'] = IMAGE_OPENSTACK
         json_worker_server['server']['flavorRef'] = FLAVOR_OPENSTACK
 
-        json_worker_server['server']['availability_zone'] = compute_availability_zone[index % len(compute_availability_zone)]
+        json_master_server['server']['availability_zone'] = compute_availability_zone[index % len(compute_availability_zone)]
 
         json_worker_server['server']['networks'][0]['port'] = mgnt_worker_port_id
         json_worker_server['server']['networks'][1]['port'] = data_worker_port_id
 
-        r = requests.post('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + "/v2.1/servers", json = json_worker_server, headers = { 'X-Auth-Token': token })
-        print("Worker VM creation: " + str(json.loads(r.text)))
+        #r = requests.post('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + "/v2.1/servers", json = json_worker_server, headers = { 'X-Auth-Token': token })
 
     return slice_id
 
@@ -253,8 +267,28 @@ def delete_slice_hpc(slice_id, cant_masters, cant_workers):
         data_port_worker_id = r_dict_data_port_worker['ports'][0]['id']
         r_delete_port = requests.delete('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/ports/" + data_port_worker_id, headers = { 'X-Auth-Token': token })
 
+    """ ELIMINAR ROUTER """
+
+    r_get_router = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + '/v2.0/routers?name=' + slice_id + '_cluster_router', headers = { 'X-Auth-Token': token })
+    r_dict_router = json.loads(r_get_router.text)
+    router_id = r_dict_router['routers'][0]['id']
+
+    r_get_access_subnet = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/subnets?name=" + slice_id + '_cluster_access_subnet', headers = { 'X-Auth-Token': token })
+    r_dict_get_access_subnet = json.loads(r_get_access_subnet.text)
+    access_subnet_id = r_dict_get_access_subnet['subnets'][0]['id']
+
+    json_config_interface_router = return_config_interface_router()
+    json_config_interface_router['subnet_id'] = access_subnet_id
+    r_config_interface_router = requests.put('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers/" + router_id + "/remove_router_interface", json = json_config_interface_router, headers = { 'X-Auth-Token': token })
+
+    r_delete_router = requests.delete('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/routers/" + router_id, headers = { 'X-Auth-Token': token })
 
     """ ELIMINAR REDES """
+
+    r_get_access_net = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks?name=" + slice_id + '_cluster_access_net', headers = { 'X-Auth-Token': token })
+    r_dict_get_access_net = json.loads(r_get_access_net.text)
+    access_net_id = r_dict_get_access_net['networks'][0]['id']
+    r_delete_net = requests.delete('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks/" + access_net_id, headers = { 'X-Auth-Token': token })
 
     r_get_mgnt_net = requests.get('http://' + CONTROLLER_IP + ':' + NETWORK_API_PORT + "/v2.0/networks?name=" + slice_id + '_cluster_mgnt_net', headers = { 'X-Auth-Token': token })
     r_dict_get_mgnt_net = json.loads(r_get_mgnt_net.text)
@@ -280,8 +314,6 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
     r_dict_data_net = json.loads(r_data_net.text)
     data_net_id = r_dict_data_net['networks'][0]['id']
     data_net_vlan = str(r_dict_data_net['networks'][0]['provider:segmentation_id'])
-
-    ### OBTENCION DE PUERTOS PARA LAS VMs
 
     mgnt_ports_masters_id = []
     mgnt_ports_masters_mac = []
@@ -314,14 +346,12 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
         data_ports_workers_id.append(data_port_worker_id)
         data_ports_workers_mac.append(data_port_worker_mac)
 
-
-
     compute_node_masters = []
     for i in range(cant_masters):
-        compute_node_master = get_vm_hostname(slice_id + '_cluster_master' + str(i), token)
-        while compute_node_master == None:
-            time.sleep(DELAY_WAIT_MS)
-            compute_node_master = get_vm_hostname(slice_id + '_cluster_master' + str(i), token)
+        r_master = requests.get('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + '/v2.1/servers/detail?name=' + slice_id + '_cluster_master' + str(i), headers = { 'X-Auth-Token': token })
+        r_dict_master = json.loads(r_master.text)
+        print(">>> MASTER COMPUTE NODE: " + str(r_dict_master))
+        compute_node_master = r_dict_master['servers'][0]['OS-EXT-SRV-ATTR:host']
         compute_node_masters.append(compute_node_master)
 
     print("var compute_node_masters ---> " + str(compute_node_masters))
@@ -330,10 +360,9 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
 
     compute_node_workers = []
     for i in range(cant_workers):
-        compute_node_worker = get_vm_hostname(slice_id + '_cluster_worker' + str(i), token)
-        while compute_node_worker == None:
-            time.sleep(DELAY_WAIT_MS)
-            compute_node_worker = get_vm_hostname(slice_id + '_cluster_worker' + str(i), token)
+        r_worker = requests.get('http://' + CONTROLLER_IP + ':' + COMPUTE_API_PORT + '/v2.1/servers/detail?name=' + slice_id + '_cluster_worker' + str(i), headers = { 'X-Auth-Token': token })
+        r_dict_worker = json.loads(r_worker.text)
+        compute_node_worker = r_dict_worker['servers'][0]['OS-EXT-SRV-ATTR:host']
         compute_node_workers.append(compute_node_worker)
 
     print("var compute_node_workers ---> " + str(compute_node_workers))
@@ -388,7 +417,7 @@ def generate_slice_mgnt_data_net_info(slice_id, cant_masters, cant_workers):
 def get_compute_openflow_port(server_compute_array):
     server_openflow_port_array = []
     for server_compute in server_compute_array:
-        server_openflow_port = computes_openflow_port_dict[server_compute]
+        server_openflow_port = computes_openflow_port_dict[server_compute + '_openflow_port']
         server_openflow_port_array.append(server_openflow_port)
     return server_openflow_port_array
 
@@ -924,9 +953,7 @@ def generate_data_flow_default_vlan_drop_array(slice_id, data_network_info):
 def generate_opendaylight_json_flows_array(slice_id, mgnt_network_info, data_network_info):
     flows_array = []
 
-    # TODO: Update access flows
-    # access_flow_array = generate_access_flow_array(slice_id, mgnt_network_info)
-    access_flow_array = []
+    access_flow_array = generate_access_flow_array(slice_id, mgnt_network_info)
 
     mgnt_flow_default_vlan_drop_array = generate_mgnt_flow_default_vlan_drop_array(slice_id, mgnt_network_info)
     data_flow_default_vlan_drop_array = generate_data_flow_default_vlan_drop_array(slice_id, data_network_info)
